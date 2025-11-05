@@ -7,10 +7,10 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-primary-glow flex items-center justify-center text-white font-bold">
-                S
+                FX
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-                Somu
+                FinXpress
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -55,7 +55,7 @@ const Footer = () => {
         <div className="pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2024 Somu. Created by Ojaswi Sonawane, Vaidehi Singh, Saee Kolhe, Sanika Niras.
+              © 2024 FinXpress. Created by Ojaswi Sonawane, Vaidehi Singh, Saee Kolhe, Sanika Niras.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">

@@ -24,7 +24,7 @@ const Hero = () => {
           {/* Main heading */}
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
             <span className="bg-gradient-to-r from-primary via-primary-glow to-accent-foreground bg-clip-text text-transparent">
-              Somu
+              FinXpress
             </span>
             <br />
             <span className="text-foreground">

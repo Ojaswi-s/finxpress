@@ -3,9 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wallet, TrendingDown, TrendingUp, Target, Plus } from "lucide-react";
+import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import ExpenseChart from "./ExpenseChart";
+
+const categoryIcons: Record<string, React.ReactNode> = {
+  Food: <UtensilsCrossed className="w-5 h-5" />,
+  Travel: <Plane className="w-5 h-5" />,
+  Subscriptions: <Tv className="w-5 h-5" />,
+  Shopping: <ShoppingBag className="w-5 h-5" />,
+  Utilities: <Home className="w-5 h-5" />,
+  Other: <MoreHorizontal className="w-5 h-5" />,
+};
 
 const Dashboard = () => {
   const [expenses] = useState([
@@ -13,6 +22,12 @@ const Dashboard = () => {
     { category: "Travel", amount: 200, date: "2024-01-18" },
     { category: "Subscriptions", amount: 99, date: "2024-01-20" },
     { category: "Shopping", amount: 350, date: "2024-01-22" },
+  ]);
+
+  const [goals] = useState([
+    { name: "Emergency Fund", target: 50000, current: 28000, icon: <Target className="w-5 h-5" /> },
+    { name: "Vacation", target: 30000, current: 12000, icon: <Plane className="w-5 h-5" /> },
+    { name: "New Laptop", target: 80000, current: 45000, icon: <ShoppingBag className="w-5 h-5" /> },
   ]);
 
   const totalIncome = 8225;
@@ -65,6 +80,42 @@ const Dashboard = () => {
             gradient="from-accent-foreground to-blue-600"
           />
         </div>
+
+        {/* Goal Tracking */}
+        <Card className="shadow-lg border-border">
+          <CardHeader>
+            <CardTitle>Financial Goals</CardTitle>
+            <CardDescription>Track your progress towards savings goals</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {goals.map((goal, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                        {goal.icon}
+                      </div>
+                      <span className="font-medium text-foreground">{goal.name}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      ₹{goal.current.toLocaleString()} / ₹{goal.target.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-primary-glow rounded-full transition-all"
+                      style={{ width: `${(goal.current / goal.target) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground text-right">
+                    {Math.round((goal.current / goal.target) * 100)}% complete
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Charts and Recent Expenses */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -129,10 +180,8 @@ const Dashboard = () => {
                   className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-sm font-medium text-primary">
-                        {expense.category[0]}
-                      </span>
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      {categoryIcons[expense.category] || <MoreHorizontal className="w-5 h-5" />}
                     </div>
                     <div>
                       <p className="font-medium text-foreground">{expense.category}</p>

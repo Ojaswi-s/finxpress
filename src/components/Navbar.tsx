@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,10 +13,10 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-primary-glow flex items-center justify-center text-white font-bold">
-              S
+              FX
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-              Somu
+              FinXpress
             </span>
           </div>
 
@@ -30,6 +31,7 @@ const Navbar = () => {
             <a href="#dashboard" className="text-foreground hover:text-primary transition-colors font-medium">
               Dashboard
             </a>
+            <ThemeToggle />
             <Button variant="outline" size="sm">
               Sign In
             </Button>
@@ -39,12 +41,15 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
