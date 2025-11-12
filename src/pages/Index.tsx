@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
-import DashboardContent from "@/components/DashboardContent";
+import Dashboard from "@/components/Dashboard";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -15,7 +15,7 @@ const Index = () => {
         <Features />
       </div>
       <div id="dashboard">
-        <DashboardContent />
+        <Dashboard />
       </div>
       <Footer />
     </div>
