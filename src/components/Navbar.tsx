@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import ThemeToggle from "./ThemeToggle";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -32,12 +34,12 @@ const Navbar = () => {
               Dashboard
             </a>
             <ThemeToggle />
-            <Button variant="outline" size="sm">
-              Sign In
-            </Button>
-            <Button size="sm">
-              Get Started
-            </Button>
+            {user && (
+              <Button variant="outline" size="sm" onClick={signOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -76,14 +78,14 @@ const Navbar = () => {
             >
               Dashboard
             </a>
-            <div className="flex flex-col gap-2 px-4">
-              <Button variant="outline" className="w-full">
-                Sign In
-              </Button>
-              <Button className="w-full">
-                Get Started
-              </Button>
-            </div>
+            {user && (
+              <div className="px-4">
+                <Button variant="outline" className="w-full" onClick={signOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
