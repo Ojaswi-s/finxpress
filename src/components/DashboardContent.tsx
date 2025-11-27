@@ -41,6 +41,7 @@ const DashboardContent = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
+  const [userType, setUserType] = useState<"student" | "professional">("professional");
   const [loading, setLoading] = useState(true);
   
   // Form states
@@ -57,10 +58,11 @@ const DashboardContent = () => {
 
   const fetchData = async () => {
     try {
-      const [expensesRes, goalsRes, incomeRes] = await Promise.all([
+      const [expensesRes, goalsRes, incomeRes, profileRes] = await Promise.all([
         supabase.from("expenses").select("*").order("date", { ascending: false }),
         supabase.from("goals").select("*"),
         supabase.from("income").select("amount"),
+        supabase.from("profiles").select("user_type").single(),
       ]);
 
       if (expensesRes.error) throw expensesRes.error;
@@ -70,6 +72,10 @@ const DashboardContent = () => {
       setExpenses(expensesRes.data || []);
       setGoals(goalsRes.data || []);
       setTotalIncome(incomeRes.data?.reduce((sum, inc) => sum + parseFloat(String(inc.amount)), 0) || 0);
+      
+      if (profileRes.data?.user_type) {
+        setUserType(profileRes.data.user_type);
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -227,7 +233,7 @@ const DashboardContent = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
-            title="Total Income"
+            title={userType === "student" ? "Monthly Pocket Money" : "Monthly Income"}
             value={`₹${totalIncome.toLocaleString()}`}
             icon={<Wallet className="w-5 h-5" />}
             gradient="from-primary to-primary-glow"
