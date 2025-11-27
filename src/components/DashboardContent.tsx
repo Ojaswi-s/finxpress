@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal, Trash2, Edit, BookOpen, GraduationCap, Coffee, Car, Briefcase, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +17,14 @@ const categoryIcons: Record<string, React.ReactNode> = {
   Subscriptions: <Tv className="w-5 h-5" />,
   Shopping: <ShoppingBag className="w-5 h-5" />,
   Utilities: <Home className="w-5 h-5" />,
+  // Student categories
+  Textbooks: <BookOpen className="w-5 h-5" />,
+  Tuition: <GraduationCap className="w-5 h-5" />,
+  Cafeteria: <Coffee className="w-5 h-5" />,
+  // Professional categories
+  Commute: <Car className="w-5 h-5" />,
+  "Office Supplies": <Briefcase className="w-5 h-5" />,
+  "Team Lunches": <Users className="w-5 h-5" />,
   Other: <MoreHorizontal className="w-5 h-5" />,
 };
 
@@ -206,11 +214,31 @@ const DashboardContent = () => {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
+                      {/* Common categories */}
                       <SelectItem value="Food">Food</SelectItem>
                       <SelectItem value="Travel">Travel</SelectItem>
-                      <SelectItem value="Subscriptions">Subscriptions</SelectItem>
                       <SelectItem value="Shopping">Shopping</SelectItem>
-                      <SelectItem value="Utilities">Utilities</SelectItem>
+                      
+                      {/* Student-specific categories */}
+                      {userType === "student" && (
+                        <>
+                          <SelectItem value="Textbooks">Textbooks</SelectItem>
+                          <SelectItem value="Tuition">Tuition</SelectItem>
+                          <SelectItem value="Cafeteria">Cafeteria</SelectItem>
+                        </>
+                      )}
+                      
+                      {/* Professional-specific categories */}
+                      {userType === "professional" && (
+                        <>
+                          <SelectItem value="Commute">Commute</SelectItem>
+                          <SelectItem value="Office Supplies">Office Supplies</SelectItem>
+                          <SelectItem value="Team Lunches">Team Lunches</SelectItem>
+                          <SelectItem value="Subscriptions">Subscriptions</SelectItem>
+                          <SelectItem value="Utilities">Utilities</SelectItem>
+                        </>
+                      )}
+                      
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
