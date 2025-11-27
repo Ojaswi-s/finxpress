@@ -6,15 +6,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Wallet } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [userType, setUserType] = useState<"student" | "professional">("student");
+  const [language, setLanguage] = useState("en");
+  const [monthlyAmount, setMonthlyAmount] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +33,19 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signUp(email, password, fullName);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          full_name: fullName,
+          user_type: userType,
+          language: language,
+          monthly_amount: monthlyAmount
+        }
+      }
+    });
     
     if (error) {
       toast.error(error.message);
@@ -143,6 +161,54 @@ const Auth = () => {
                       minLength={6}
                     />
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label>I am a</Label>
+                    <RadioGroup value={userType} onValueChange={(value: "student" | "professional") => setUserType(value)}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="student" id="student" />
+                        <Label htmlFor="student" className="font-normal cursor-pointer">Student</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="professional" id="professional" />
+                        <Label htmlFor="professional" className="font-normal cursor-pointer">Working Professional</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="language">Preferred Language</Label>
+                    <Select value={language} onValueChange={setLanguage}>
+                      <SelectTrigger id="language">
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
+                        <SelectItem value="hi">Hindi</SelectItem>
+                        <SelectItem value="zh">Chinese</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="monthly-amount">
+                      {userType === "student" ? "Monthly Pocket Money" : "Monthly Income"}
+                    </Label>
+                    <Input
+                      id="monthly-amount"
+                      type="number"
+                      placeholder="0.00"
+                      value={monthlyAmount}
+                      onChange={(e) => setMonthlyAmount(e.target.value)}
+                      required
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Creating account..." : "Create Account"}
                   </Button>
