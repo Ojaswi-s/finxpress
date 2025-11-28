@@ -9,6 +9,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  resendVerificationEmail: () => Promise<{ error: any }>;
   loading: boolean;
 }
 
@@ -67,8 +68,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     navigate("/auth");
   };
 
+  const resendVerificationEmail = async () => {
+    if (!user?.email) {
+      return { error: { message: "No email found" } };
+    }
+    
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: user.email,
+    });
+    
+    return { error };
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, signUp, signIn, signOut, loading }}>
+    <AuthContext.Provider value={{ user, session, signUp, signIn, signOut, resendVerificationEmail, loading }}>
       {children}
     </AuthContext.Provider>
   );
