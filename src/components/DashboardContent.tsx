@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal, Trash2, Edit, BookOpen, GraduationCap, Coffee, Car, Briefcase, Users } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal, Trash2, Edit, BookOpen, GraduationCap, Coffee, Car, Briefcase, Users, Mail, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,12 +46,13 @@ interface Goal {
 }
 
 const DashboardContent = () => {
-  const { user } = useAuth();
+  const { user, resendVerificationEmail } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [userType, setUserType] = useState<"student" | "professional">("professional");
   const [loading, setLoading] = useState(true);
+  const [resendingEmail, setResendingEmail] = useState(false);
   
   // Form states
   const [expenseForm, setExpenseForm] = useState({ amount: "", category: "", description: "" });
@@ -164,6 +166,18 @@ const DashboardContent = () => {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendingEmail(true);
+    const { error } = await resendVerificationEmail();
+    
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Verification email sent! Check your inbox.");
+    }
+    setResendingEmail(false);
+  };
+
   const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(String(exp.amount)), 0);
   const savings = totalIncome - totalExpenses;
 
@@ -178,6 +192,27 @@ const DashboardContent = () => {
   return (
     <section className="min-h-screen py-20 px-4">
       <div className="container max-w-7xl mx-auto space-y-8">
+        {/* Email Verification Banner */}
+        {user && !user.email_confirmed_at && (
+          <Alert variant="default" className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+            <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+            <AlertTitle className="text-yellow-800 dark:text-yellow-400">Email Verification Required</AlertTitle>
+            <AlertDescription className="text-yellow-700 dark:text-yellow-400 flex items-center justify-between">
+              <span>Please verify your email address to access all features.</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResendVerification}
+                disabled={resendingEmail}
+                className="ml-4 border-yellow-600 text-yellow-800 hover:bg-yellow-100 dark:border-yellow-500 dark:text-yellow-400 dark:hover:bg-yellow-950"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                {resendingEmail ? "Sending..." : "Resend Email"}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
