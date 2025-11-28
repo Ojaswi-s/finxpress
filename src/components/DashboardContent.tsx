@@ -5,12 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal, Trash2, Edit, BookOpen, GraduationCap, Coffee, Car, Briefcase, Users, Mail, AlertCircle } from "lucide-react";
+import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal, Trash2, Edit, BookOpen, GraduationCap, Coffee, Car, Briefcase, Users, Mail, AlertCircle, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import ExpenseChart from "./ExpenseChart";
+import UserProfile from "./UserProfile";
 
 const categoryIcons: Record<string, React.ReactNode> = {
   Food: <UtensilsCrossed className="w-5 h-5" />,
@@ -53,6 +54,7 @@ const DashboardContent = () => {
   const [userType, setUserType] = useState<"student" | "professional">("professional");
   const [loading, setLoading] = useState(true);
   const [resendingEmail, setResendingEmail] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   
   // Form states
   const [expenseForm, setExpenseForm] = useState({ amount: "", category: "", description: "" });
@@ -64,24 +66,22 @@ const DashboardContent = () => {
     if (user) {
       fetchData();
     }
-  }, [user]);
+  }, [user, profileOpen]);
 
   const fetchData = async () => {
     try {
-      const [expensesRes, goalsRes, incomeRes, profileRes] = await Promise.all([
+      const [expensesRes, goalsRes, profileRes] = await Promise.all([
         supabase.from("expenses").select("*").order("date", { ascending: false }),
         supabase.from("goals").select("*"),
-        supabase.from("income").select("amount"),
-        supabase.from("profiles").select("user_type").single(),
+        supabase.from("profiles").select("user_type, monthly_amount").single(),
       ]);
 
       if (expensesRes.error) throw expensesRes.error;
       if (goalsRes.error) throw goalsRes.error;
-      if (incomeRes.error) throw incomeRes.error;
 
       setExpenses(expensesRes.data || []);
       setGoals(goalsRes.data || []);
-      setTotalIncome(incomeRes.data?.reduce((sum, inc) => sum + parseFloat(String(inc.amount)), 0) || 0);
+      setTotalIncome(parseFloat(String(profileRes.data?.monthly_amount || 0)));
       
       if (profileRes.data?.user_type) {
         setUserType(profileRes.data.user_type);
@@ -219,7 +219,12 @@ const DashboardContent = () => {
             <h2 className="text-4xl font-bold text-foreground mb-2">Financial Dashboard</h2>
             <p className="text-muted-foreground">Track your income, expenses, and savings at a glance</p>
           </div>
-          <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setProfileOpen(true)}>
+              <User className="w-4 h-4 mr-2" />
+              Profile
+            </Button>
+            <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
             <DialogTrigger asChild>
               <Button className="shadow-lg">
                 <Plus className="w-4 h-4 mr-2" />
@@ -291,6 +296,7 @@ const DashboardContent = () => {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -470,6 +476,8 @@ const DashboardContent = () => {
           </CardContent>
         </Card>
       </div>
+
+      <UserProfile open={profileOpen} onOpenChange={setProfileOpen} />
     </section>
   );
 };
