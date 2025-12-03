@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal, Trash2, Edit, BookOpen, GraduationCap, Coffee, Car, Briefcase, Users, Mail, AlertCircle, User } from "lucide-react";
+import { Wallet, TrendingDown, TrendingUp, Target, Plus, UtensilsCrossed, Plane, Tv, ShoppingBag, Home, MoreHorizontal, Trash2, Edit, BookOpen, GraduationCap, Coffee, Car, Briefcase, Users, Mail, AlertCircle, User, Building2, Landmark, Hotel, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,10 +23,14 @@ const categoryIcons: Record<string, React.ReactNode> = {
   Textbooks: <BookOpen className="w-5 h-5" />,
   Tuition: <GraduationCap className="w-5 h-5" />,
   Cafeteria: <Coffee className="w-5 h-5" />,
+  "Hostel Fees": <Hotel className="w-5 h-5" />,
+  "Study Material": <FileText className="w-5 h-5" />,
   // Professional categories
   Commute: <Car className="w-5 h-5" />,
   "Office Supplies": <Briefcase className="w-5 h-5" />,
   "Team Lunches": <Users className="w-5 h-5" />,
+  "House Rent": <Building2 className="w-5 h-5" />,
+  "Home Loan": <Landmark className="w-5 h-5" />,
   Other: <MoreHorizontal className="w-5 h-5" />,
 };
 
@@ -265,6 +269,8 @@ const DashboardContent = () => {
                           <SelectItem value="Textbooks">Textbooks</SelectItem>
                           <SelectItem value="Tuition">Tuition</SelectItem>
                           <SelectItem value="Cafeteria">Cafeteria</SelectItem>
+                          <SelectItem value="Hostel Fees">Hostel Fees</SelectItem>
+                          <SelectItem value="Study Material">Study Material</SelectItem>
                         </>
                       )}
                       
@@ -276,6 +282,8 @@ const DashboardContent = () => {
                           <SelectItem value="Team Lunches">Team Lunches</SelectItem>
                           <SelectItem value="Subscriptions">Subscriptions</SelectItem>
                           <SelectItem value="Utilities">Utilities</SelectItem>
+                          <SelectItem value="House Rent">House Rent</SelectItem>
+                          <SelectItem value="Home Loan">Home Loan</SelectItem>
                         </>
                       )}
                       
