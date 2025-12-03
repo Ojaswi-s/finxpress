@@ -1,6 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
-const COLORS = {
+const COLORS: Record<string, string> = {
   Food: "hsl(142 76% 45%)",
   Travel: "hsl(217 91% 60%)",
   Subscriptions: "hsl(280 87% 65%)",
@@ -9,6 +9,18 @@ const COLORS = {
   Entertainment: "hsl(340 82% 60%)",
   Health: "hsl(0 84% 60%)",
   Education: "hsl(45 93% 55%)",
+  // Student categories
+  Textbooks: "hsl(262 83% 58%)",
+  Tuition: "hsl(198 93% 60%)",
+  Cafeteria: "hsl(32 95% 50%)",
+  "Hostel Fees": "hsl(355 78% 56%)",
+  "Study Material": "hsl(168 76% 42%)",
+  // Professional categories
+  Commute: "hsl(240 70% 60%)",
+  "Office Supplies": "hsl(15 90% 55%)",
+  "Team Lunches": "hsl(48 96% 53%)",
+  "House Rent": "hsl(308 70% 55%)",
+  "Home Loan": "hsl(173 80% 40%)",
   Other: "hsl(220 14% 50%)",
 };
 
