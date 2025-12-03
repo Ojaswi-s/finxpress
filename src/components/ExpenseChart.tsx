@@ -1,12 +1,15 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 const COLORS = {
-  Food: "hsl(158 64% 52%)",
-  Travel: "hsl(210 100% 50%)",
-  Subscriptions: "hsl(280 70% 60%)",
-  Shopping: "hsl(30 100% 60%)",
-  Utilities: "hsl(200 70% 50%)",
-  Other: "hsl(0 0% 60%)",
+  Food: "hsl(142 76% 45%)",
+  Travel: "hsl(217 91% 60%)",
+  Subscriptions: "hsl(280 87% 65%)",
+  Shopping: "hsl(25 95% 58%)",
+  Utilities: "hsl(187 85% 45%)",
+  Entertainment: "hsl(340 82% 60%)",
+  Health: "hsl(0 84% 60%)",
+  Education: "hsl(45 93% 55%)",
+  Other: "hsl(220 14% 50%)",
 };
 
 interface Expense {
