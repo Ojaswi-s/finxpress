@@ -11,11 +11,13 @@ const corsHeaders = {
 interface SendOTPRequest {
   email: string;
   userId: string;
+  action?: string;
 }
 
 interface VerifyOTPRequest {
   email: string;
   code: string;
+  action: string;
 }
 
 const generateOTP = (): string => {
@@ -23,6 +25,7 @@ const generateOTP = (): string => {
 };
 
 serve(async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -32,8 +35,23 @@ serve(async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const body = await req.json();
+    // Read the raw body text first
+    const rawBody = await req.text();
+    console.log("Raw request body:", rawBody);
+    
+    let body: any;
+    try {
+      body = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error("Failed to parse JSON:", parseError);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const action = body.action || "send";
+    console.log("Action:", action, "Body:", JSON.stringify(body));
 
     if (action === "send") {
       const { email, userId } = body as SendOTPRequest;
@@ -49,11 +67,17 @@ serve(async (req: Request): Promise<Response> => {
       const otpCode = generateOTP();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+      console.log("Generated OTP for:", email);
+
       // Clean up old OTPs for this user
-      await supabase
+      const { error: deleteError } = await supabase
         .from("otp_codes")
         .delete()
         .eq("email", email);
+
+      if (deleteError) {
+        console.log("Delete old OTPs error (may be normal):", deleteError);
+      }
 
       // Store OTP in database
       const { error: insertError } = await supabase
@@ -72,6 +96,8 @@ serve(async (req: Request): Promise<Response> => {
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      console.log("OTP stored successfully, sending email...");
 
       // Send OTP via email using Resend API
       const emailResponse = await fetch("https://api.resend.com/emails", {
@@ -99,7 +125,15 @@ serve(async (req: Request): Promise<Response> => {
       });
 
       const emailData = await emailResponse.json();
-      console.log("OTP email sent:", emailData);
+      console.log("Resend API response:", JSON.stringify(emailData));
+
+      if (!emailResponse.ok) {
+        console.error("Email send failed:", emailData);
+        return new Response(
+          JSON.stringify({ error: "Failed to send verification email", details: emailData }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       return new Response(
         JSON.stringify({ success: true, message: "OTP sent successfully" }),
@@ -116,6 +150,8 @@ serve(async (req: Request): Promise<Response> => {
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      console.log("Verifying OTP for:", email);
 
       // Verify OTP
       const { data: otpData, error: otpError } = await supabase
@@ -141,6 +177,8 @@ serve(async (req: Request): Promise<Response> => {
         .update({ used: true })
         .eq("id", otpData.id);
 
+      console.log("OTP verified successfully for:", email);
+
       return new Response(
         JSON.stringify({ success: true, message: "OTP verified successfully" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -154,7 +192,7 @@ serve(async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-otp function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
