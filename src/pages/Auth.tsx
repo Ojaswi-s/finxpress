@@ -8,10 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
-import { Wallet, Eye, EyeOff, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Wallet, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -23,21 +23,16 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
-  
-  // 2FA states
-  const [showOtpScreen, setShowOtpScreen] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [pendingUserId, setPendingUserId] = useState("");
-  const [pendingEmail, setPendingEmail] = useState("");
-  
-  const { user } = useAuth();
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && !showOtpScreen) {
+    if (user) {
       navigate("/");
     }
-  }, [user, navigate, showOtpScreen]);
+  }, [user, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,191 +65,34 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    // First verify credentials
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Welcome back!");
+      navigate("/");
+    }
+    setLoading(false);
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth`,
     });
     
     if (error) {
       toast.error(error.message);
-      setLoading(false);
-      return;
+    } else {
+      toast.success("Password reset email sent! Check your inbox.");
+      setResetDialogOpen(false);
+      setResetEmail("");
     }
-
-    if (data.user) {
-      // Sign out immediately - user needs to verify OTP first
-      await supabase.auth.signOut();
-      
-      // Send OTP
-      try {
-        const response = await supabase.functions.invoke("send-otp", {
-          body: { email, userId: data.user.id, action: "send" },
-        });
-
-        if (response.error) {
-          toast.error("Failed to send verification code");
-          setLoading(false);
-          return;
-        }
-
-        setPendingUserId(data.user.id);
-        setPendingEmail(email);
-        setShowOtpScreen(true);
-        toast.success("Verification code sent to your email!");
-      } catch (err) {
-        console.error("OTP send error:", err);
-        toast.error("Failed to send verification code");
-      }
-    }
-    
     setLoading(false);
   };
-
-  const handleVerifyOtp = async () => {
-    if (otpCode.length !== 6) {
-      toast.error("Please enter a valid 6-digit code");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await supabase.functions.invoke("send-otp", {
-        body: { email: pendingEmail, code: otpCode, action: "verify" },
-      });
-
-      if (response.error || response.data?.error) {
-        toast.error(response.data?.error || "Invalid verification code");
-        setLoading(false);
-        return;
-      }
-
-      // OTP verified, now sign in the user
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: pendingEmail,
-        password,
-      });
-
-      if (signInError) {
-        toast.error(signInError.message);
-      } else {
-        toast.success("Welcome back!");
-        navigate("/");
-      }
-    } catch (err) {
-      console.error("OTP verification error:", err);
-      toast.error("Failed to verify code");
-    }
-
-    setLoading(false);
-  };
-
-  const handleResendOtp = async () => {
-    setLoading(true);
-    
-    try {
-      const response = await supabase.functions.invoke("send-otp", {
-        body: { email: pendingEmail, userId: pendingUserId, action: "send" },
-      });
-
-      if (response.error) {
-        toast.error("Failed to resend verification code");
-      } else {
-        toast.success("New verification code sent!");
-        setOtpCode("");
-      }
-    } catch (err) {
-      console.error("OTP resend error:", err);
-      toast.error("Failed to resend verification code");
-    }
-
-    setLoading(false);
-  };
-
-  const handleBackToLogin = () => {
-    setShowOtpScreen(false);
-    setOtpCode("");
-    setPendingUserId("");
-    setPendingEmail("");
-    setPassword("");
-  };
-
-  // OTP Verification Screen
-  if (showOtpScreen) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <ShieldCheck className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-bold">Two-Factor Authentication</span>
-            </div>
-            <p className="text-muted-foreground">
-              Enter the 6-digit code sent to <strong>{pendingEmail}</strong>
-            </p>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Verify Your Identity</CardTitle>
-              <CardDescription>
-                We've sent a verification code to your email for added security
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex justify-center">
-                <InputOTP
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={(value) => setOtpCode(value)}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              <Button 
-                onClick={handleVerifyOtp} 
-                className="w-full" 
-                disabled={loading || otpCode.length !== 6}
-              >
-                {loading ? "Verifying..." : "Verify & Sign In"}
-              </Button>
-
-              <div className="flex items-center justify-between text-sm">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleBackToLogin}
-                  className="gap-1"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to login
-                </Button>
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  onClick={handleResendOtp}
-                  disabled={loading}
-                >
-                  Resend code
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -319,6 +157,39 @@ const Auth = () => {
                         )}
                       </Button>
                     </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button type="button" variant="link" className="px-0 text-sm">
+                          Forgot Password?
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Reset Password</DialogTitle>
+                          <DialogDescription>
+                            Enter your email address and we'll send you a link to reset your password.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handlePasswordReset} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="reset-email">Email</Label>
+                            <Input
+                              id="reset-email"
+                              type="email"
+                              placeholder="you@example.com"
+                              value={resetEmail}
+                              onChange={(e) => setResetEmail(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <Button type="submit" className="w-full" disabled={loading}>
+                            {loading ? "Sending..." : "Send Reset Link"}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"}
