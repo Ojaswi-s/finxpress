@@ -90,7 +90,6 @@ const Auth = () => {
       try {
         const response = await supabase.functions.invoke("send-otp", {
           body: { email, userId: data.user.id, action: "send" },
-          headers: { "Content-Type": "application/json" },
         });
 
         if (response.error) {
@@ -123,7 +122,6 @@ const Auth = () => {
     try {
       const response = await supabase.functions.invoke("send-otp", {
         body: { email: pendingEmail, code: otpCode, action: "verify" },
-        headers: { "Content-Type": "application/json" },
       });
 
       if (response.error || response.data?.error) {
@@ -158,7 +156,6 @@ const Auth = () => {
     try {
       const response = await supabase.functions.invoke("send-otp", {
         body: { email: pendingEmail, userId: pendingUserId, action: "send" },
-        headers: { "Content-Type": "application/json" },
       });
 
       if (response.error) {
